@@ -22,6 +22,18 @@ MUONMatcher::MUONMatcher() {
 }
 
 //_________________________________________________________________________________________________
+void MUONMatcher::LoadAbsorber() {
+
+  if (!mGeoManager) {
+    mGeoManager = new TGeoManager("Matcher Geometry", "Matcher Geometry");
+    o2::passive::Cave("CAVE", "Cave").ConstructGeometry();
+    o2::passive::Shil("SHIL", "Small angle beam shield").ConstructGeometry();
+    o2::passive::Absorber("ABSO", "Absorber").ConstructGeometry();
+    mGeoManager->CloseGeometry();
+  }
+}
+
+//_________________________________________________________________________________________________
 void MUONMatcher::Clear() {
 
   mMFTTracks.clear();
@@ -63,7 +75,6 @@ void MUONMatcher::loadMCHTracks() {
       mchTrackOut.setBendingCoor(mchtrackIn.fBendingCoor);
       mchTrackOut.setBendingSlope(mchtrackIn.fThetaY);
       mchTrackOut.setInverseBendingMomentum(mchtrackIn.fInverseBendingMomentum);
-
       TMatrixD cov(5, 5);
       cov(0, 0) = mchtrackIn.fCovariances[0];
       cov(0, 1) = mchtrackIn.fCovariances[1];
@@ -282,6 +293,14 @@ void MUONMatcher::loadMFTClusters() {
 //_________________________________________________________________________________________________
 void MUONMatcher::initGlobalTracks() {
   // Populates mGlobalMuonTracks using MCH track data
+
+  if (!mGeoManager) {
+    mGeoManager = new TGeoManager("Matcher Geometry", "Matcher Geometry");
+    o2::passive::Cave("CAVE", "Cave").ConstructGeometry();
+    o2::passive::Shil("SHIL", "Small angle beam shield").ConstructGeometry();
+    o2::passive::Absorber("ABSO", "Absorber").ConstructGeometry();
+    mGeoManager->CloseGeometry();
+  }
 
   mGlobalMuonTracks.clear();
   for (auto &track : mMCHTracks) {
@@ -1166,6 +1185,12 @@ GlobalMuonTrack MUONMatcher::MCHtoGlobal(MCHTrack &mchTrack) {
   // Covariances matrix conversion
   SMatrix55Std jacobian;
   SMatrix55Sym covariances;
+
+  std::cout << " MCHtoGlobal - MCH Covariances:\n";
+  std::cout << " mchTrack.getCovariances()(0, 0) =  "
+            << mchTrack.getCovariances()(0, 0)
+            << " ; mchTrack.getCovariances()(2, 2) = "
+            << mchTrack.getCovariances()(2, 2) << std::endl;
 
   covariances(0, 0) = mchTrack.getCovariances()(0, 0);
   covariances(0, 1) = mchTrack.getCovariances()(0, 1);
