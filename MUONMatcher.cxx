@@ -400,37 +400,42 @@ void MUONMatcher::runEventMatching()
           if (mCustomMatchFunc) { // Custom matching function
             for (auto mftTrack : mMFTTracks) {
               auto MFTlabel = mftTrackLabels.getLabels(mftTrackID);
-                if (MFTlabel[0].getEventID() == event)
-                  if (matchingCut(gTrack, mftTrack)) {
-                    gTrack.countCandidate();
-                    if (MFTlabel[0].getTrackID() == MCHlabel[0].getTrackID())
-                      gTrack.setCloseMatch();
-                    auto chi2 = (*mCustomMatchFunc)(gTrack, mftTrack);
-                    if (chi2 < gTrack.getMatchingChi2()) {
-                      gTrack.setBestMFTTrackMatchID(mftTrackID);
-                      gTrack.setMatchingChi2(chi2);
-                    }
+              if (MFTlabel[0].getEventID() == event)
+                if (matchingCut(gTrack, mftTrack)) {
+                  gTrack.countCandidate();
+                  if (MFTlabel[0].getTrackID() == MCHlabel[0].getTrackID())
+                    gTrack.setCloseMatch();
+                  auto chi2 = (*mCustomMatchFunc)(gTrack, mftTrack);
+                  if (chi2 < gTrack.getMatchingChi2()) {
+                    gTrack.setBestMFTTrackMatchID(mftTrackID);
+                    gTrack.setMatchingChi2(chi2);
                   }
+                }
               mftTrackID++;
             }
           } else { // Built-in matching function
             for (auto mftTrack : mMFTTracks) {
               auto MFTlabel = mftTrackLabels.getLabels(mftTrackID);
-                if (MFTlabel[0].getEventID() == event)
-                  if (matchingCut(gTrack, mftTrack)) {
-                    gTrack.countCandidate();
-                    if (MFTlabel[0].getTrackID() == MCHlabel[0].getTrackID())
-                      gTrack.setCloseMatch();
-                    auto chi2 = (this->*mMatchFunc)(gTrack, mftTrack);
-                    if (chi2 < gTrack.getMatchingChi2()) {
+              if (MFTlabel[0].getEventID() == event)
+                if (matchingCut(gTrack, mftTrack)) {
+                  gTrack.countCandidate();
+                  if (MFTlabel[0].getTrackID() == MCHlabel[0].getTrackID())
+                    gTrack.setCloseMatch();
+                  auto chi2 = (this->*mMatchFunc)(gTrack, mftTrack);
+                  if (chi2 < gTrack.getMatchingChi2()) {
+                    gTrack.setMatchingChi2(chi2);
+                    // TMVA: Drop MFT candidate if score bellow threshold
+                    //  Note: comparing negative ML scores to get lowest value
+                    //  as for chi2
+                    if (!(mTMVAReader && (std::abs(chi2) < mMLScoreCut)))
                       gTrack.setBestMFTTrackMatchID(mftTrackID);
-                      gTrack.setMatchingChi2(chi2);
-                    }
                   }
+                }
               mftTrackID++;
             }
           }
         }
+
         GTrackID++;
       }      // /loop over global tracks
     } else { // if matchSaveAll is set
@@ -1545,6 +1550,18 @@ double MUONMatcher::matchMFT_MCH_TracksAllParam(const GlobalMuonTrack& mchTrack,
   // matchTrack.setCovariances(GlobalMuonTrackCovariances);
   // matchTrack.setMatchingChi2(matchChi2Track);
   return matchChi2Track;
+}
+//_________________________________________________________________________________________________
+double MUONMatcher::matchTrainedML(const GlobalMuonTrack &mchTrack,
+                                   const MFTTrack &mftTrack) {
+
+  mMCH_MFT_pair[0] = mchTrack.GetX();
+  mMCH_MFT_pair[1] = ...... mMCH_MFT_pair[39] =
+
+      double matchingscore =
+          mTMVAReader->EvaluateRegression(0, "MUONMatcherML");
+
+  return -matchingscore;
 }
 
 Float_t EtaToTheta(Float_t arg)
