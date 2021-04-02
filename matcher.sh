@@ -323,6 +323,8 @@ trainML()
     exit
   fi
 
+  export ML_TYPE="Regression" #${ML_TYPE:-"Regression"}
+
   if [ -d "${OUTDIR}" ]; then
       if ! [ -z ${UPDATECODE+x} ]; then updatecode ; fi
       pushd ${OUTDIR}
@@ -471,6 +473,14 @@ while [ $# -gt 0 ] ; do
     --train)
     export TRAIN_ML="1";
     shift 1
+    ;;
+    --method)
+    export ML_METHOD="$2";
+    shift 2
+    ;;
+    --type)
+    export ML_TYPE="$2";
+    shift 2
     ;;
     --layout)
     export ML_LAYOUT="$2";

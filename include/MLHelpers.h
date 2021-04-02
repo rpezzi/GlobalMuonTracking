@@ -32,20 +32,18 @@ string DNN_read(const std::string& MLLayout, const std::string& MLStrat, const s
         content2 = xml.GetNodeContent(param);
         TString paramstr(content2);
         std::cout << config_str << xml.GetNodeName(param) << " found! " << std::endl;
-        //        std::cout<<" Content: " << paramstr<<"\n"<<std::endl;
         training_str += paramstr + ":";
         break;
       }
       param = xml.GetNext(param);
       if (!param) {
-        std::cout << config_str << configuration_map[config_str] << " NOT found! Aborting...\n"
+        std::cout << config_str << configuration_map[config_str] << " NOT found! Using TMVA's default (if needed for your method) \n"
                   << std::endl;
-        exit(1);
+//        exit(1);
       }
     }
     config = xml.GetNext(config);
   }
-  //		std::cout<<" Complete ML String: "<<training_str<<"\n"<<std::endl;
   // Release memory before exit
   xml.FreeDoc(xmldoc);
 
